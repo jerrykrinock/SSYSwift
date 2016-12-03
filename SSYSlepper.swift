@@ -42,10 +42,10 @@ import UIKit
  This is a modification of the [GMStepper](https://github.com/gmertk/GMStepper)
  class published by Gunay Mert Karadogan.  GMStepper lacks the *slider*
  response.  Conversely, SSYSlepper lacks the animations of GMStepper because,
- especially with the slider action, I thought it made it too confusing the
+ especially with the slider action, I thought it made it too confusing to the
  user, and also I wanted to simplify the code.
  
- - requires: Swift 3.0
+ - requires: Swift 3.0, Auto Layout, tested with ios 10
 */
 
 @IBDesignable public class SSYSlepper: UIControl {
@@ -312,6 +312,9 @@ import UIKit
         rightButton.frame = CGRect(x: labelWidth + buttonWidth, y: 0, width: buttonWidth, height: bounds.size.height)
     }
     
+    /* Seems overly pedantic to use this function instead of just setting the
+     value directly in stepperState.didSet(), but it makes sense because this
+     function is also called by the autorepeat timer. */
     func updateValueFromStepper() {
         if stepperState == .increasing {
             value += stepValue
@@ -337,7 +340,7 @@ import UIKit
             let newLocation = gesture.location(in: self).x
             let fractionOfAPoint = CGFloat(0.1)
             
-            value = minimumValue + Double((newLocation/self.frame.width)) * (maximumValue - minimumValue)
+            value = minimumValue + Double((newLocation/self.frame.width)) * (maximumValue - minimumValue) + 1
             
             if (newLocation > fractionOfAPoint) && (newLocation > self.frame.width - fractionOfAPoint) {
                 stepperState = .stable

@@ -42,7 +42,7 @@ import UIKit
  - todo: Add more shapes by porting from my
  [SSYVectorImages Objective-C class](https://github.com/jerrykrinock/ClassesObjC/blob/master/SSYVectorImages.h).
  
- - requires: Swift 3.0, iOS 10
+ - requires: Swift 3.0, tested with iOS 10
  */
 public struct SSYVectorImages {
     /**
