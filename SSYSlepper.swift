@@ -63,10 +63,14 @@ import UIKit
                 label.text = items[Int(value)]
             }
             else {
+                /* We "round" the given value as required, by converting it to
+                 a string with our defining floatFormat, then converting
+                 back to a Double. */
                 value = min(maximumValue, max(minimumValue, value))
                 let format = String("%\(self.floatFormat)f")!
                 let stringValue = String(format:format, self.value)
                 value = Double(stringValue)!
+
                 label.text = stringValue
             }
             
