@@ -50,19 +50,27 @@ import UIKit
 
 @IBDesignable public class SSYSlepper: UIControl {
     
+    /// Returns `true` if the instance is displaying items, `false` if numbers
+    public func isItemized() -> Bool {
+        return (stepValue == 1.0) && (items.count > 0)
+    }
+    
     /// Current value of the slepper. Defaults to 0.
     @IBInspectable public var value: Double = 0 {
         didSet {
-            value = min(maximumValue, max(minimumValue, value))
             
-            if stepValue == 1.0 && items.count > 0 {
+            if self.isItemized() {
                 label.text = items[Int(value)]
             }
             else {
+                value = min(maximumValue, max(minimumValue, value))
                 let format = String("%\(self.floatFormat)f")!
-                label.text = String(format:format, self.value)
+                let stringValue = String(format:format, self.value)
+                value = Double(stringValue)!
+                label.text = stringValue
             }
             
+            /* oldValue is a parameter to this function, built in by Swift. */
             if oldValue != value {
                 sendActions(for: .valueChanged)
             }
@@ -255,6 +263,10 @@ import UIKit
         }
     }
     
+    /**
+    Apparently you set this if you want the instance to display a selected
+    string instead of a number, in other words, behave like an enumeration.
+    */
     public var items : [String] = [] {
         didSet {
             // If we have items, we will display them as steps
