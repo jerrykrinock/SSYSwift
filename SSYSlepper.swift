@@ -133,7 +133,10 @@ import UIKit
     }
     
     /// Background color of the number displayed in the user interface. Defaults to a lighter blue.
-    @IBInspectable public var labelBackgroundColor: UIColor = UIColor(red:0.26, green:0.6, blue:0.87, alpha:1) {
+    @IBInspectable public var labelBackgroundColor: UIColor = UIColor(red:0.26,
+                                                                      green:0.6,
+                                                                      blue:0.87,
+                                                                      alpha:1) {
         didSet {
             label.backgroundColor = labelBackgroundColor
         }
