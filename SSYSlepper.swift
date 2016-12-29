@@ -1,5 +1,5 @@
 /*
- This file is a modification of the GMStepper class published by
+ This file is a modification of the SSYSlepper class published by
  Gunay Mert Karadogan, which has the following license:
  
  The MIT License (MIT)
@@ -27,21 +27,54 @@
 
 import UIKit
 
+// For debugging
+extension UIGestureRecognizerState {
+    var debugState : String {
+        switch self {
+        case .possible:
+            return "possible"
+        case .began:
+            return "began"
+        case .changed:
+            return "changed"
+        case .ended:
+            return "ended"
+        case .cancelled:
+            return "cancelled"
+        case .failed:
+            return "failed"
+        }
+    }
+}
+
+
 /* This file is documented with Xcode Markup:
  https://developer.apple.com/library/content/documentation/Xcode/Reference/xcode_markup_formatting_ref/MarkupFunctionality.html#//apple_ref/doc/uid/TP40016497-CH54-SW1
  */
 
 /**
- A control which is a combination *slider* (as in UISlidr) and *stepper* (as
- in `UIStepper`).  It is typically 200 points wide and 30 points high.  The user
+ ## Update 2016-Dec-29
+ 
+ This is a terrible control.  I learned a lot about iOS controls and Swift
+ while coding it, but it gives a terrible user experience because the
+ user cannot see the numbers change as they are swiping.  I'm going to either
+ change it substantially (again) or, more likely, I'm going to abadon it.
+ 
+ ## Summary
+ 
+ A number control which the user can either swipe or  and step.  Swiping causes
+ value changes greater than 1, depending on how fast and how long (in points)
+ the user swipes.
+ 
+ This control is typically 200 points wide and 30 points high.  The user
  may change the value of the control either by swiping to a desried x position,
  wherein the left edge produces the minimum value and the right edge produces
  the maximum value, or by clicking the stepper "buttons" which are on the left
  and right edges.
  
- This is a modification of the [GMStepper](https://github.com/gmertk/GMStepper)
- class published by Gunay Mert Karadogan.  GMStepper lacks the *slider*
- response.  Conversely, SSYSlepper lacks the animations of GMStepper because,
+ This is a modification of the [SSYSlepper](https://github.com/gmertk/SSYSlepper)
+ class published by Gunay Mert Karadogan.  SSYSlepper lacks the *slider*
+ response.  Conversely, SSYSlepper lacks the animations of SSYSlepper because,
  especially with the slider action, I thought it made it too confusing to the
  user, and also I wanted to simplify the code.
  
@@ -55,10 +88,11 @@ import UIKit
         return (stepValue == 1.0) && (items.count > 0)
     }
     
-    /// Current value of the slepper. Defaults to 0.
+    var isSettingValue = false
+    
+    /// Current value of the slepper, rounded to the current floatFormat. Defaults to 0.
     @IBInspectable public var value: Double = 0 {
         didSet {
-            
             if self.isItemized() {
                 label.text = items[Int(value)]
             }
@@ -70,10 +104,15 @@ import UIKit
                 let format = String("%\(self.floatFormat)f")!
                 let stringValue = String(format:format, self.value)
                 value = Double(stringValue)!
-
                 label.text = stringValue
+                
+                if (!isSettingValue) {
+                    isSettingValue = true
+                    valueInternal = value
+                    isSettingValue = false
+                }
             }
-            
+
             /* oldValue is a parameter to this function, built in by Swift. */
             if oldValue != value {
                 sendActions(for: .valueChanged)
@@ -83,17 +122,27 @@ import UIKit
         }
     }
     
+    @IBInspectable public var valueInternal: Double = 0 {
+        didSet {
+            if (!isSettingValue) {
+                isSettingValue = true
+                value = valueInternal
+                isSettingValue = false
+            }
+        }
+    }
+    
     /// Minimum value of the slepper. Must be less than maximumValue. Defaults to 0.
     @IBInspectable public var minimumValue: Double = 0 {
         didSet {
-            value = min(maximumValue, max(minimumValue, value))
+            valueInternal = min(maximumValue, max(minimumValue, valueInternal))
         }
     }
     
     /// Maximum value of the slepper. Must be more than minimumValue. Defaults to 100.
     @IBInspectable public var maximumValue: Double = 100 {
         didSet {
-            value = min(maximumValue, max(minimumValue, value))
+            valueInternal = min(maximumValue, max(minimumValue, valueInternal))
         }
     }
     
@@ -240,7 +289,7 @@ import UIKit
         let label = UILabel()
         label.textAlignment = .center
         let format = String("%\(self.floatFormat)f")!
-        label.text = String(format:format, self.value)
+        label.text = String(format:format, self.valueInternal)
         label.textColor = self.labelTextColor
         label.backgroundColor = self.labelBackgroundColor
         label.font = self.labelFont
@@ -280,11 +329,11 @@ import UIKit
             
             if stepValue == 1.0 && items.count > 0 {
                 
-                var value = Int(self.value)
+                var value = Int(self.valueInternal)
                 
                 if value >= items.count {
                     value = items.count - 1
-                    self.value = Double(value)
+                    self.valueInternal = Double(value)
                 }
                 else {
                     label.text = items[value]
@@ -354,17 +403,28 @@ import UIKit
             leftButton.isEnabled = false
             rightButton.isEnabled = false
         case .changed:
-            gesture.setTranslation(CGPoint.zero, in: label)
+            let translation = gesture.translation(in: self)
+            
+            // Recognize both *up* and *right* as an increase, or vice versa
+            let deltaPoints = translation.x + translation.y
+            let velocityPoints = gesture.velocity(in: self)
+            let x2 = pow(Double(velocityPoints.x), 2.0)
+            let y2 = pow(Double(velocityPoints.y), 2.0)
+            let velocityPointsPerSecond = sqrt(x2 + y2)
+            let mediumVelocity = 30.0
+            let velocityFactor = velocityPointsPerSecond / mediumVelocity
             
             let newLocation = gesture.location(in: self).x
             let fractionOfAPoint = CGFloat(0.1)
             
-            value = minimumValue + Double((newLocation/self.frame.width)) * (maximumValue - minimumValue) + 1
+            let empiricalFactor = Double(255)
+            let deltaValue = Double(deltaPoints/self.frame.width) * (maximumValue - minimumValue) * velocityFactor / empiricalFactor
+            /*SSYDBL*/ print("tr = \(translation)  deltaPoints = \(deltaPoints)  deltaValue = \(deltaValue)  veF=\(velocityFactor)")
+            valueInternal += deltaValue
             
             if (newLocation > fractionOfAPoint) && (newLocation > self.frame.width - fractionOfAPoint) {
                 stepperState = .stable
                 resetAutorepeatTimer()
-                
             }
         case .ended, .cancelled, .failed:
             reset()
@@ -383,11 +443,11 @@ import UIKit
     }
     
     func updateButtonColors() {
-        if value == minimumValue {
+        if valueInternal == minimumValue {
             leftButton.backgroundColor = self.buttonBackgroundColorAtLimit
             rightButton.backgroundColor = buttonsBackgroundColor
         }
-        else if value == maximumValue {
+        else if valueInternal == maximumValue {
             leftButton.backgroundColor = buttonsBackgroundColor
             rightButton.backgroundColor = self.buttonBackgroundColorAtLimit
         }
@@ -417,7 +477,7 @@ import UIKit
         label.isUserInteractionEnabled = false
         resetAutorepeatTimer()
         
-        if value != minimumValue {
+        if valueInternal != minimumValue {
             stepperState = .decreasing
         }
         
@@ -428,7 +488,7 @@ import UIKit
         label.isUserInteractionEnabled = false
         resetAutorepeatTimer()
         
-        if value != maximumValue {
+        if valueInternal != maximumValue {
             stepperState = .increasing
         }
     }
