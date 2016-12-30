@@ -226,6 +226,39 @@ public struct SSYVectorImages {
     }
     
     /**
+     Returns an icon containing a line drawing of a pencil oriented at 45 
+     degrees to vertical, to symbolize editing
+     - parameter length: The width and height of the returned image
+     - parameter color:  The color of the lines in the line drawing
+     */
+    public static func editingPencil(length: CGFloat,
+                                     color: UIColor) -> UIImage {
+        let path =
+            self.bezierPathForNormalizedDrawing(
+                length: length,
+                radians: CGFloat.pi/4.0)
+        
+        let lineWidth = 2.0
+        let radius : CGFloat = 8.0
+        let length : CGFloat = 100.0 * sqrt (2.0) - radius - 2 * lineWidth
+        let tipConeHeight : CGFloat = 20.0
+
+        path.move(to: CGPoint(x: 0, y: -length/2))
+        path.addLine(to: CGPoint(x: -radius, y: -length/2 + tipConeHeight))
+        path.addLine(to: CGPoint(x: -radius, y: +length/2))
+        path.addLine(to: CGPoint(x: +radius, y: +length/2))
+        path.addLine(to: CGPoint(x: -radius, y: -length/2 + tipConeHeight))
+        path.close()
+
+        
+        path.lineWidth = lineWidth
+        color.setStroke()
+        path.stroke()
+        
+        return self.finishNormalizedDrawing() ;
+    }
+    
+    /**
      Returns an icon containing a either a *plus* or *minus* symbol
      - parameter plus:  Pass `true` if you want plus, `false` for minus
      - parameter length: The width and height of the returned image
