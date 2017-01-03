@@ -419,7 +419,6 @@ extension UIGestureRecognizerState {
             
             let empiricalFactor = Double(255)
             let deltaValue = Double(deltaPoints/self.frame.width) * (maximumValue - minimumValue) * velocityFactor / empiricalFactor
-            /*SSYDBL*/ print("tr = \(translation)  deltaPoints = \(deltaPoints)  deltaValue = \(deltaValue)  veF=\(velocityFactor)")
             valueInternal += deltaValue
             
             if (newLocation > fractionOfAPoint) && (newLocation > self.frame.width - fractionOfAPoint) {

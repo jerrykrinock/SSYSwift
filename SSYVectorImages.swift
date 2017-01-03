@@ -243,7 +243,7 @@ public struct SSYVectorImages {
         color.setFill()
         
         let lineWidth : CGFloat = 3.0
-        let radius : CGFloat = 9.0
+        let radius : CGFloat = 12.0
         let tipConeHeight : CGFloat = 25.0
         let leadHeight : CGFloat = 10.0
         let eraserHeight : CGFloat = 12.0
