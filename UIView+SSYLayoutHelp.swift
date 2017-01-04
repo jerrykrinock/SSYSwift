@@ -1,26 +1,19 @@
 import UIKit
 
 extension UIView {
-    func removeWidthConstraints() {
+    func removeZeroWidthConstraintsOnSelf() {
         var widthConstraints = [NSLayoutConstraint]()
-        var constraints: [NSLayoutConstraint]
-        // See Note 1 below
-        constraints = self.constraints
+        let constraints = self.constraints
         for constraint: NSLayoutConstraint in constraints {
             if constraint.firstItem as! NSObject == self {
                 if constraint.firstAttribute == .width {
-                    widthConstraints.append(constraint)
+                    if constraint.constant == 0.0 {
+                        widthConstraints.append(constraint)
+                    }
                 }
             }
         }
-        constraints = self.superview!.constraints
-        for constraint: NSLayoutConstraint in constraints {
-            if constraint.firstItem as! NSObject == self {
-                if constraint.firstAttribute == .width {
-                    widthConstraints.append(constraint)
-                }
-            }
-        }
+
         NSLayoutConstraint.deactivate(widthConstraints)
     }
     
@@ -38,12 +31,25 @@ extension UIView {
         self.addConstraints(constraints)
     }
     
+    /**
+     "Hides" a view, with animaion, by having its width collapse to zero, or
+     expands it back to normal
+     
+     The view must have its frame constrained by Auto Layout, and must have an
+     intrinsic content size, and not have a required (priority=1000) width
+     constraint.
+     
+     - parameter yes:  Pass `true` to collapse the view to zero width, `false`
+     to expand it back to its intrinsic width
+     - requires: Swift 3.0
+     */
+
     func collapseWidth(yes: Bool) {
         if (yes) {
             self.addWidthConstraint(0.0)
         }
         else {
-            self.removeWidthConstraints()
+            self.removeZeroWidthConstraintsOnSelf()
         }
         
         let systemStandardAnimationDuration = CATransaction.animationDuration()
@@ -53,15 +59,6 @@ extension UIView {
         }
     }
 }
-
-/* Note 1
- 
- From -[NSView addConstraint:] documentation:
- 
- “The constraint must involve only views that are within scope of the receiving view. Specifically, any views involved must be either the receiving view itself, or a subview of the receiving view. Constraints that are added to a view are said to be held by that view…”
- 
- The fact that constraints may be “held” by either of *two* views makes it a little ambiguous to replace constraints, which is necessary to rearrange views while running.  Prior to adding new constraints, you need to remove conflicting old constraints.  To find them, you need to consider the -constraints of *two* views.
- */
 
 public extension Notification {
     public class UIView {
