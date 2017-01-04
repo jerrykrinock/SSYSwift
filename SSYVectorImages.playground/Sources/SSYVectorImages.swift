@@ -329,6 +329,103 @@ public struct SSYVectorImages {
     }
     
     /**
+     Returns an icon containing a line drawing of a pencil oriented at 45
+     degrees to vertical, to symbolize editing
+     - parameter length: The width and height of the returned image
+     - parameter color:  The color of the lines in the line drawing
+     */
+    public static func dumbbell(length: CGFloat,
+                                     color: UIColor) -> UIImage {
+        let path =
+            self.bezierPathForNormalizedDrawing(
+                length: length,
+                radians: 0.0)
+        /* Several of the calculations below rely on the tilt being 45 degrees
+         (pi/4).  It simplifies the math because cosine = sine. */
+        color.setStroke()
+        color.setFill()
+        
+        var aRect : CGRect
+        var aPath : UIBezierPath
+        
+        let lineWidth : CGFloat = 3.0
+        let barRadius : CGFloat = 5.0
+        let bigWeightRadius : CGFloat = 30.0
+        let bigWeightThickness : CGFloat = 10.0
+        let smallWeightRadius : CGFloat = 15.0
+        let smallWeightThickness : CGFloat = 10.0
+        let middleHalfGap : CGFloat = 25.0
+        
+        // Left big weight
+        aRect = CGRect(x: -middleHalfGap - bigWeightThickness / 2,
+                       y: -bigWeightRadius,
+                       width: bigWeightThickness,
+                       height: 2 * bigWeightRadius)
+        aPath = UIBezierPath(rect: aRect)
+        path.append(aPath)
+        
+        // Right big weight
+        aRect = CGRect(x: +middleHalfGap - bigWeightThickness / 2,
+                       y: -bigWeightRadius,
+                       width: bigWeightThickness,
+                       height: 2 * bigWeightRadius)
+        aPath = UIBezierPath(rect: aRect)
+        path.append(aPath)
+        
+        // Left little weight
+        aRect = CGRect(x: -middleHalfGap - bigWeightThickness - smallWeightThickness / 2,
+                       y: -smallWeightRadius,
+                       width: smallWeightThickness,
+                       height: 2 * smallWeightRadius)
+        aPath = UIBezierPath(rect: aRect)
+        path.append(aPath)
+        
+        // Right little weight
+        aRect = CGRect(x: +middleHalfGap + bigWeightThickness - smallWeightThickness / 2,
+                       y: -smallWeightRadius,
+                       width: smallWeightThickness,
+                       height: 2 * smallWeightRadius)
+        aPath = UIBezierPath(rect: aRect)
+        path.append(aPath)
+        
+        /* We are done with the four "weights".  We want those to be filled. */
+        path.fill()
+        /* The parts of the "bar", which follow, will not be filled. */
+        
+        // Middle of bar
+        aRect = CGRect(x: -middleHalfGap + bigWeightThickness / 2,
+                       y: -barRadius / 2,
+                       width: 2 * middleHalfGap - bigWeightThickness,
+                       height: 2 * barRadius)
+        aPath = UIBezierPath(rect: aRect)
+        path.append(aPath)
+        
+        let halfExcludingEnds = middleHalfGap + bigWeightThickness / 2 + smallWeightThickness
+        let endLengths = 50.0 - halfExcludingEnds - lineWidth / 2
+            
+        // Left end of bar
+        aRect = CGRect(x: -50.0 + lineWidth / 2,
+                       y: -barRadius / 2,
+                       width: endLengths,
+                       height: 2 * barRadius)
+        aPath = UIBezierPath(rect: aRect)
+        path.append(aPath)
+        
+        // Right end of bar
+        aRect = CGRect(x: halfExcludingEnds,
+                       y: -barRadius / 2,
+                       width: endLengths,
+                       height: 2 * barRadius)
+        aPath = UIBezierPath(rect: aRect)
+        path.append(aPath)
+        
+        path.lineWidth = lineWidth
+        path.stroke()
+        
+        return self.finishNormalizedDrawing() ;
+    }
+    
+    /**
      Returns an icon containing a either a *plus* or *minus* symbol
      - parameter plus:  Pass `true` if you want plus, `false` for minus
      - parameter length: The width and height of the returned image

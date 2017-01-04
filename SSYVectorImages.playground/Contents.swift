@@ -220,3 +220,14 @@ image = SSYVectorImages.plusMinus(plus: false,
 imageView = UIImageView(image: image)
 imageView.frame.origin = CGPoint(x: x, y: y)
 playgroundView.addSubview(imageView)
+
+x = 0.0
+y += imageView.frame.height
+
+image = SSYVectorImages.dumbbell(length: playgroundView.frame.width/3,
+                                 color: UIColor.red)
+imageView = UIImageView(image: image)
+imageView.frame.origin = CGPoint(x: x, y: y)
+playgroundView.addSubview(imageView)
+
+
