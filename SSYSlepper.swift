@@ -53,26 +53,23 @@ extension UIGestureRecognizerState {
  */
 
 /**
- ## Update 2016-Dec-29
+ ## Update 2017-Jan-04
  
- This is a terrible control.  I learned a lot about iOS controls and Swift
- while coding it, but it gives a terrible user experience because the
- user cannot see the numbers change as they are swiping.  I'm going to either
- change it substantially (again) or, more likely, I'm going to abadon it.
+ This control still needs work to make it nice, but at least with the latest
+ changes most users should not throw their device out the window.
  
  ## Summary
  
- A number control which the user can either swipe or  and step.  Swiping causes
- value changes greater than 1, depending on how fast and how long (in points)
- the user swipes.
+ A number control which the user can either swipe or  and step.  Swiping can
+ cause absolute value changes greater than 1, depending on how fast and how long
+ (in points) the user swipes.
  
- This control is typically 200 points wide and 30 points high.  The user
- may change the value of the control either by swiping to a desried x position,
- wherein the left edge produces the minimum value and the right edge produces
- the maximum value, or by clicking the stepper "buttons" which are on the left
- and right edges.
+ This control is typically 200 points wide and 60 points high.  The user
+ may change the value of the control either by swiping, or by clicking the
+ stepper "buttons" which are on the left and right edges.  When swiping the
+ value change is a function of both the length and velocity of the swipe.
  
- This is a modification of the [SSYSlepper](https://github.com/gmertk/SSYSlepper)
+ This is a modification of the [](https://github.com/gmertk/)
  class published by Gunay Mert Karadogan.  SSYSlepper lacks the *slider*
  response.  Conversely, SSYSlepper lacks the animations of SSYSlepper because,
  especially with the slider action, I thought it made it too confusing to the
@@ -88,13 +85,19 @@ extension UIGestureRecognizerState {
         return (stepValue == 1.0) && (items.count > 0)
     }
     
+    @IBInspectable public var title: String = "Please set `title`" {
+        didSet {
+            titleLabel.text = title
+        }
+    }
+    
     var isSettingValue = false
     
     /// Current value of the slepper, rounded to the current floatFormat. Defaults to 0.
     @IBInspectable public var value: Double = 0 {
         didSet {
             if self.isItemized() {
-                label.text = items[Int(value)]
+                valueLabel.text = items[Int(value)]
             }
             else {
                 /* We "round" the given value as required, by converting it to
@@ -104,7 +107,7 @@ extension UIGestureRecognizerState {
                 let format = String("%\(self.floatFormat)f")!
                 let stringValue = String(format:format, self.value)
                 value = Double(stringValue)!
-                label.text = stringValue
+                valueLabel.text = stringValue
                 
                 if (!isSettingValue) {
                     isSettingValue = true
@@ -177,7 +180,8 @@ extension UIGestureRecognizerState {
     /// Text color of the number displayed in the user interface. Defaults to white.
     @IBInspectable public var labelTextColor: UIColor = UIColor.white {
         didSet {
-            label.textColor = labelTextColor
+            valueLabel.textColor = labelTextColor
+            titleLabel.textColor = labelTextColor
         }
     }
     
@@ -187,14 +191,16 @@ extension UIGestureRecognizerState {
                                                                       blue:0.87,
                                                                       alpha:1) {
         didSet {
-            label.backgroundColor = labelBackgroundColor
+            valueLabel.backgroundColor = labelBackgroundColor
+            titleLabel.backgroundColor = labelBackgroundColor
         }
     }
     
     /// Font of the number displayed in the user interface. Defaults to system font, 25.0 points in size.
     public var labelFont = UIFont.systemFont(ofSize: 25.0) {
         didSet {
-            label.font = labelFont
+            valueLabel.font = labelFont
+            titleLabel.font = labelFont
         }
     }
     
@@ -206,11 +212,13 @@ extension UIGestureRecognizerState {
         }
     }
     
-    /// Border width of the slepper. Defaults to 0.0.
+    /// Border width of the labels in the slepper. Defaults to 0.0.
     @IBInspectable public var borderWidth: CGFloat = 0.0 {
         didSet {
             layer.borderWidth = borderWidth
-            label.layer.borderWidth = borderWidth
+            valueLabel.layer.borderWidth = borderWidth
+            layer.borderWidth = borderWidth
+            titleLabel.layer.borderWidth = borderWidth
         }
     }
     
@@ -218,14 +226,15 @@ extension UIGestureRecognizerState {
     @IBInspectable public var borderColor: UIColor = UIColor.clear {
         didSet {
             layer.borderColor = borderColor.cgColor
-            label.layer.borderColor = borderColor.cgColor
+            valueLabel.layer.borderColor = borderColor.cgColor
+            titleLabel.layer.borderColor = borderColor.cgColor
         }
     }
     
     /// Fraction of the slepper's width allocated to the middle part which shows the number. Must be between 0 and 1. Defaults to 0.5.
-    @IBInspectable public var labelWidthWeight: CGFloat = 0.5 {
+    @IBInspectable public var middleWidthWeight: CGFloat = 0.5 {
         didSet {
-            labelWidthWeight = min(1, max(0, labelWidthWeight))
+            middleWidthWeight = min(1, max(0, middleWidthWeight))
             setNeedsLayout()
         }
     }
@@ -249,6 +258,9 @@ extension UIGestureRecognizerState {
                                               inset: length/4,
                                               radians: 0.0,
                                               color: self.buttonsTextColor)
+        /* The following preserves the aspect ratio of the image.  The hidden
+         `imageView` was discovered by Dave: http://stackoverflow.com/questions/2950613/uibutton-doesnt-listen-to-content-mode-setting */
+        button.imageView?.contentMode = .scaleAspectFit
         button.setImage(image,
                         for: UIControlState.normal)
         /* The following three lines should not be necessary, according to
@@ -274,6 +286,9 @@ extension UIGestureRecognizerState {
                                               inset: length/4,
                                               radians: 0.0,
                                               color: self.buttonsTextColor)
+        /* The following preserves the aspect ratio of the image.  The hidden
+         `imageView` was discovered by Dave: http://stackoverflow.com/questions/2950613/uibutton-doesnt-listen-to-content-mode-setting */
+        button.imageView?.contentMode = .scaleAspectFit
         button.setImage(image, for: UIControlState.normal)
         /* The following three lines should not be necessary, according to
          UIButton.setImage:for:() documentation.  But in iOS 10.1, they are
@@ -281,11 +296,22 @@ extension UIGestureRecognizerState {
         button.setImage(image, for: UIControlState.focused)
         button.setImage(image, for: UIControlState.highlighted)
         button.setImage(image,for: UIControlState.disabled)
-
+        
         return button
     }()
     
-    lazy var label: UILabel = {
+    lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.text = self.title
+        label.textColor = self.labelTextColor
+        label.backgroundColor = self.labelBackgroundColor
+        label.font = self.labelFont
+        label.isUserInteractionEnabled = true
+         return label
+    }()
+    
+    lazy var valueLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
         let format = String("%\(self.floatFormat)f")!
@@ -294,15 +320,8 @@ extension UIGestureRecognizerState {
         label.backgroundColor = self.labelBackgroundColor
         label.font = self.labelFont
         label.isUserInteractionEnabled = true
-        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(SSYSlepper.handlePan))
-        panRecognizer.maximumNumberOfTouches = 1
-        self.addGestureRecognizer(panRecognizer)
         return label
     }()
-    
-    var labelOriginalCenter: CGPoint!
-    var labelMaximumCenterX: CGFloat!
-    var labelMinimumCenterX: CGFloat!
     
     enum StepperState {
         case stable, increasing, decreasing
@@ -336,7 +355,7 @@ extension UIGestureRecognizerState {
                     self.valueInternal = Double(value)
                 }
                 else {
-                    label.text = items[value]
+                    titleLabel.text = items[value]
                 }
             }
         }
@@ -359,8 +378,13 @@ extension UIGestureRecognizerState {
     func setup() {
         addSubview(leftButton)
         addSubview(rightButton)
-        addSubview(label)
+        addSubview(titleLabel)
+        addSubview(valueLabel)
         
+        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(SSYSlepper.handlePan))
+        panRecognizer.maximumNumberOfTouches = 1
+        self.addGestureRecognizer(panRecognizer)
+
         backgroundColor = buttonsBackgroundColor
         layer.cornerRadius = cornerRadius
         clipsToBounds = true
@@ -372,12 +396,15 @@ extension UIGestureRecognizerState {
     }
     
     public override func layoutSubviews() {
-        let buttonWidth = bounds.size.width * ((1 - labelWidthWeight) / 2)
-        let labelWidth = bounds.size.width * labelWidthWeight
+        let buttonWidth = bounds.size.width * ((1 - middleWidthWeight) / 2)
+        let valueLabelWidth = bounds.size.width * middleWidthWeight
+        let titleLabelWidth = bounds.size.width
         
-        leftButton.frame = CGRect(x: 0, y: 0, width: buttonWidth, height: bounds.size.height)
-        label.frame = CGRect(x: buttonWidth, y: 0, width: labelWidth, height: bounds.size.height)
-        rightButton.frame = CGRect(x: labelWidth + buttonWidth, y: 0, width: buttonWidth, height: bounds.size.height)
+        let halfHeight = bounds.size.height / 2
+        leftButton.frame = CGRect(x: 0, y: 0, width: buttonWidth, height: halfHeight)
+        valueLabel.frame = CGRect(x: buttonWidth, y: 0, width: valueLabelWidth, height: halfHeight)
+        rightButton.frame = CGRect(x: valueLabelWidth + buttonWidth, y: 0, width: buttonWidth, height: halfHeight)
+        titleLabel.frame = CGRect(x: 0, y: halfHeight, width: titleLabelWidth, height: halfHeight)
     }
     
     /* Seems overly pedantic to use this function instead of just setting the
@@ -438,7 +465,8 @@ extension UIGestureRecognizerState {
         
         leftButton.isEnabled = true
         rightButton.isEnabled = true
-        label.isUserInteractionEnabled = true
+        valueLabel.isUserInteractionEnabled = true
+        titleLabel.isUserInteractionEnabled = true
     }
     
     func updateButtonColors() {
@@ -473,7 +501,8 @@ extension UIGestureRecognizerState {
     
     func leftButtonTouchDown(button: UIButton) {
         rightButton.isEnabled = false
-        label.isUserInteractionEnabled = false
+        valueLabel.isUserInteractionEnabled = false
+        titleLabel.isUserInteractionEnabled = false
         resetAutorepeatTimer()
         
         if valueInternal != minimumValue {
@@ -484,7 +513,8 @@ extension UIGestureRecognizerState {
     
     func rightButtonTouchDown(button: UIButton) {
         leftButton.isEnabled = false
-        label.isUserInteractionEnabled = false
+        valueLabel.isUserInteractionEnabled = false
+        titleLabel.isUserInteractionEnabled = false
         resetAutorepeatTimer()
         
         if valueInternal != maximumValue {
