@@ -56,25 +56,32 @@ extension UIView {
      constraint.  If I want a "regular" width constraint, I set its priority
      to 900.
      
+     If this function returns `true`, you may animate the dis/appearance of
+     this subview with code such as this:
+     ```
+     let systemStandardAnimationDuration = CATransaction.animationDuration()
+     UIView.animate(withDuration: systemStandardAnimationDuration) { () -> Void
+         in
+         self.view.layoutIfNeeded()
+     }
+
+     ```
+     
+     If your animation jerks at the beginning, ensure that you are not calling
+     layoutIfNeeded() twice, once without animation and once with animation.
+     
      - parameter yes:  Pass `true` to collapse the view to zero width, `false`
      to expand it back to its intrinsic width
      - requires: Swift 3.0
-     */
-    func collapseWidth(yes: Bool) {
-        var didDo : Bool = false
+     - returns: `true` if any constraint was added or removed, `false` if the
+     function was a no-op because the constraints were already as prescribed
+*/
+    @discardableResult func collapseWidth(yes: Bool) -> Bool {
         if (yes) {
-            didDo = self.ensureZeroWidthConstraint()
+            return self.ensureZeroWidthConstraint()
         }
         else {
-            didDo = self.removeZeroWidthConstraintsOnSelf()
-        }
-        
-        if didDo {
-            let systemStandardAnimationDuration = CATransaction.animationDuration()
-            UIView.animate(withDuration: systemStandardAnimationDuration) { () -> Void
-                in
-                self.superview?.layoutIfNeeded()
-            }
+            return self.removeZeroWidthConstraintsOnSelf()
         }
     }
 
@@ -128,23 +135,13 @@ extension UIView {
      Same as collapseWidth(yes:) except works in vertical instead of
      horizontal direction
      */
-    func collapseHeight(yes: Bool) {
-        var didDo : Bool = false
-
+    @discardableResult func collapseHeight(yes: Bool) -> Bool {
         if (yes) {
-            didDo = self.ensureZeroHeightConstraint()
+            return self.ensureZeroHeightConstraint()
         }
         else {
-            didDo = self.removeZeroHeightConstraintsOnSelf()
-        }
-        
-        if didDo {
-            let systemStandardAnimationDuration = CATransaction.animationDuration()
-            UIView.animate(withDuration: systemStandardAnimationDuration) { () -> Void
-                in
-                self.superview?.layoutIfNeeded()
-            }
-        }
+            return self.removeZeroHeightConstraintsOnSelf()
+        }        
     }
 }
 
