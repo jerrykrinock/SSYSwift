@@ -60,14 +60,12 @@ extension UIGestureRecognizerState {
  
  ## Summary
  
- A number control which the user can either swipe or  and step.  Swiping can
- cause absolute value changes greater than 1, depending on how fast and how long
- (in points) the user swipes.
+ A number control whose value the user can change by either tapping or swiping.
+ Tapping on its "+" or "-" changes the value by a small, fixed amount, typically
+ 1.  Swiping can cause absolute value changes greater than 1, depending on how
+ fast (in points/second) the user swipes.
  
- This control is typically 200 points wide and 60 points high.  The user
- may change the value of the control either by swiping, or by clicking the
- stepper "buttons" which are on the left and right edges.  When swiping the
- value change is a function of both the length and velocity of the swipe.
+ This control is typically 200 points wide and 60 points high.
  
  This is a modification of the [](https://github.com/gmertk/)
  class published by Gunay Mert Karadogan.  SSYSlepper lacks the *slider*
@@ -430,24 +428,20 @@ extension UIGestureRecognizerState {
             leftButton.isEnabled = false
             rightButton.isEnabled = false
         case .changed:
-            let translation = gesture.translation(in: self)
-            
+            let empiricalFactor = CGFloat(256)
+            var valueFactor = CGFloat(maximumValue - minimumValue)
+            if (valueFactor < 20) {
+                valueFactor = 20
+            }
+
             // Recognize both *up* and *right* as an increase, or vice versa
-            let deltaPoints = translation.x + translation.y
             let velocityPoints = gesture.velocity(in: self)
-            let x2 = pow(Double(velocityPoints.x), 2.0)
-            let y2 = pow(Double(velocityPoints.y), 2.0)
-            let velocityPointsPerSecond = sqrt(x2 + y2)
-            let mediumVelocity = 30.0
-            let velocityFactor = velocityPointsPerSecond / mediumVelocity
+
+            let deltaValue = Double((velocityPoints.x + velocityPoints.y) * valueFactor / (self.frame.width * empiricalFactor))
+            valueInternal += deltaValue
             
             let newLocation = gesture.location(in: self).x
             let fractionOfAPoint = CGFloat(0.1)
-            
-            let empiricalFactor = Double(255)
-            let deltaValue = Double(deltaPoints/self.frame.width) * (maximumValue - minimumValue) * velocityFactor / empiricalFactor
-            valueInternal += deltaValue
-            
             if (newLocation > fractionOfAPoint) && (newLocation > self.frame.width - fractionOfAPoint) {
                 stepperState = .stable
                 resetAutorepeatTimer()
