@@ -102,7 +102,7 @@ extension UIGestureRecognizerState {
                  a string with our defining floatFormat, then converting
                  back to a Double. */
                 value = min(maximumValue, max(minimumValue, value))
-                let format = String("%\(self.floatFormat)f")!
+                let format = "%\(self.floatFormat)f"
                 let stringValue = String(format:format, self.value)
                 value = Double(stringValue)!
                 valueLabel.text = stringValue
@@ -312,7 +312,7 @@ extension UIGestureRecognizerState {
     lazy var valueLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
-        let format = String("%\(self.floatFormat)f")!
+        let format = "%\(self.floatFormat)f"
         label.text = String(format:format, self.valueInternal)
         label.textColor = self.labelTextColor
         label.backgroundColor = self.labelBackgroundColor
@@ -408,7 +408,7 @@ extension UIGestureRecognizerState {
     /* Seems overly pedantic to use this function instead of just setting the
      value directly in stepperState.didSet(), but it makes sense because this
      function is also called by the autorepeat timer. */
-    func updateValueFromStepper() {
+    @objc func updateValueFromStepper() {
         if stepperState == .increasing {
             value += stepValue
         }
@@ -422,7 +422,7 @@ extension UIGestureRecognizerState {
         NotificationCenter.default.removeObserver(self)
     }
     
-    func handlePan(gesture: UIPanGestureRecognizer) {
+    @objc func handlePan(gesture: UIPanGestureRecognizer) {
         switch gesture.state {
         case .began:
             leftButton.isEnabled = false
@@ -453,7 +453,7 @@ extension UIGestureRecognizerState {
         }
     }
     
-    func reset() {
+    @objc func reset() {
         stepperState = .stable
         resetAutorepeatTimer()
         
@@ -493,7 +493,7 @@ extension UIGestureRecognizerState {
         }
     }
     
-    func leftButtonTouchDown(button: UIButton) {
+    @objc func leftButtonTouchDown(button: UIButton) {
         rightButton.isEnabled = false
         valueLabel.isUserInteractionEnabled = false
         titleLabel.isUserInteractionEnabled = false
@@ -505,7 +505,7 @@ extension UIGestureRecognizerState {
         
     }
     
-    func rightButtonTouchDown(button: UIButton) {
+    @objc func rightButtonTouchDown(button: UIButton) {
         leftButton.isEnabled = false
         valueLabel.isUserInteractionEnabled = false
         titleLabel.isUserInteractionEnabled = false
@@ -516,7 +516,7 @@ extension UIGestureRecognizerState {
         }
     }
     
-    func buttonTouchUp(button: UIButton) {
+    @objc func buttonTouchUp(button: UIButton) {
         reset()
     }
 }
