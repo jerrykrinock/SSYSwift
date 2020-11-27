@@ -33,10 +33,10 @@ extension UIView {
             var constraints = [NSLayoutConstraint]()
             constraints.append(NSLayoutConstraint(
                 item:self,
-                attribute:NSLayoutAttribute.width,
-                relatedBy:NSLayoutRelation.equal,
+                attribute:NSLayoutConstraint.Attribute.width,
+                relatedBy:NSLayoutConstraint.Relation.equal,
                 toItem:nil,
-                attribute:NSLayoutAttribute.notAnAttribute,
+                attribute:NSLayoutConstraint.Attribute.notAnAttribute,
                 multiplier:1.0,
                 constant:0.0))
             self.addConstraints(constraints)
@@ -118,10 +118,10 @@ extension UIView {
             var constraints = [NSLayoutConstraint]()
             constraints.append(NSLayoutConstraint(
                 item:self,
-                attribute:NSLayoutAttribute.height,
-                relatedBy:NSLayoutRelation.equal,
+                attribute:NSLayoutConstraint.Attribute.height,
+                relatedBy:NSLayoutConstraint.Relation.equal,
                 toItem:nil,
-                attribute:NSLayoutAttribute.notAnAttribute,
+                attribute:NSLayoutConstraint.Attribute.notAnAttribute,
                 multiplier:1.0,
                 constant:0.0))
             self.addConstraints(constraints)
@@ -146,7 +146,7 @@ extension UIView {
 }
 
 public extension Notification {
-    public class UIView {
+    class UIView {
         /* Sadly, even in iOS 10, UIViewController.isEditing seems to be not
          KVO compliant.  (I tried KVO and it "just didn't work".)  So, we make
          one… */

@@ -28,7 +28,7 @@
 import UIKit
 
 // For debugging
-extension UIGestureRecognizerState {
+extension UIGestureRecognizer.State {
     var debugState : String {
         switch self {
         case .possible:
@@ -43,6 +43,8 @@ extension UIGestureRecognizerState {
             return "cancelled"
         case .failed:
             return "failed"
+        @unknown default:
+            fatalError()
         }
     }
 }
@@ -260,13 +262,13 @@ extension UIGestureRecognizerState {
          `imageView` was discovered by Dave: http://stackoverflow.com/questions/2950613/uibutton-doesnt-listen-to-content-mode-setting */
         button.imageView?.contentMode = .scaleAspectFit
         button.setImage(image,
-                        for: UIControlState.normal)
+                        for: UIControl.State.normal)
         /* The following three lines should not be necessary, according to
          UIButton.setImage:for:() documentation.  But in iOS 10.1, they are
          necessary.  Is this a bug in ios 10.1? */
-        button.setImage(image, for: UIControlState.focused)
-        button.setImage(image, for: UIControlState.highlighted)
-        button.setImage(image, for: UIControlState.disabled)
+        button.setImage(image, for: UIControl.State.focused)
+        button.setImage(image, for: UIControl.State.highlighted)
+        button.setImage(image, for: UIControl.State.disabled)
 
         return button
     }()
@@ -287,13 +289,13 @@ extension UIGestureRecognizerState {
         /* The following preserves the aspect ratio of the image.  The hidden
          `imageView` was discovered by Dave: http://stackoverflow.com/questions/2950613/uibutton-doesnt-listen-to-content-mode-setting */
         button.imageView?.contentMode = .scaleAspectFit
-        button.setImage(image, for: UIControlState.normal)
+        button.setImage(image, for: UIControl.State.normal)
         /* The following three lines should not be necessary, according to
          UIButton.setImage:for:() documentation.  But in iOS 10.1, they are
          necessary.  Is this a bug in ios 10.1? */
-        button.setImage(image, for: UIControlState.focused)
-        button.setImage(image, for: UIControlState.highlighted)
-        button.setImage(image,for: UIControlState.disabled)
+        button.setImage(image, for: UIControl.State.focused)
+        button.setImage(image, for: UIControl.State.highlighted)
+        button.setImage(image,for: UIControl.State.disabled)
         
         return button
     }()
@@ -389,7 +391,7 @@ extension UIGestureRecognizerState {
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(SSYSlepper.reset),
-                                               name: NSNotification.Name.UIApplicationWillResignActive,
+                                               name: UIApplication.willResignActiveNotification,
                                                object: nil)
     }
     
